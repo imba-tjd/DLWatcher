@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<head>
+    <title>DLsite Lowest Price Watcher</title>
+    <meta name="keywords" content="dlsite">
+
+    <style>
+        header {
+            background: yellowgreen;
+            color: whitesmoke;
+            text-align: center;
+        }
+
+        header h1 {
+            padding: 5px;
+        }
+
+        footer {
+            margin-top: 50px;
+            background-color: slateblue;
+            text-align: center;
+        }
+
+        footer section {
+            padding: 10px 50px;
+            color: white;
+        }
+
+        footer a {
+            color: white;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: gainsboro;
+        }
+
+        tbody {
+            text-align: center;
+        }
+
+        tbody td:nth-child(2) {
+            text-align: left;
+        }
+
+        td {
+            padding: 2px;
+        }
+    </style>
+</head>
+
+<html>
+<header>
+    <h1>DLsite Lowest Price Watcher</h1>
+</header>
+
+<main>
+    <article>
+        <p>For a long time there isn't a DLsite version of <i>SteamDB</i>. It's easy to create one. But it's hard to:
+        </p>
+        <ul>
+            <li>not abuse crawling</li>
+            <li>make good use of data</li>
+            <li>prevent from being abused</li>
+        </ul>
+        <p>This program retrieves data from <code>https://www.dlsite.com/&lt;category&gt;/ranking/total</code>. Namely
+            it only tracks best sellers. You're not able to trivially modify this to track custom artifact.</p>
+        <p><strong>Record starts from <time>2022/4/1</time></strong></p>
+    </article>
+
+    <hr>
+
+    <section data-nosnippet non-crawlable>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Discount</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>{DATA}</tbody>
+        </table>
+    </section>
+</main>
+
+<footer>
+    <section>
+        <small><a href="https://github.com/imba-tjd/dlwatcher"
+                target="_blank">https://github.com/imba-tjd/dlwatcher</a></small>
+    </section>
+</footer>
+
+</html>
