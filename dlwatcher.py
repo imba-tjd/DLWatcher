@@ -16,7 +16,7 @@ pattern = re.compile(
     '.+?'
     'type_sale">(.+?)%OFF', re.S)  # Discount percent
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Artifact(NamedTuple):
@@ -85,7 +85,7 @@ def load(dbname='data.csv') -> list[Artifact]:
 
 def merge(old: list[Artifact], new: ArtifactDict):
     '''因为数据源只跟踪最新的top榜，所以把老的数据合并到新的数据中'''
-    logger.info('merging...')
+    logger.info('merging.')
     for item in old:
         if (id := item.ID) in new and item.Discount > new[id].Discount:
             new[id] = item
@@ -106,6 +106,7 @@ def ya_api_builder_2(n=100):
 
 
 def make_html(data: Iterable[Artifact]):
+    logger.info('making html.')
     with open('data_tmpl.html', encoding='u8') as f:
         html_tmpl = f.read()
     row_tmpl = '<tr><td>{0}</td><td><a target="_blank" href="https://www.dlsite.com/maniax/work/=/product_id/{0}.html">{1}</a></td><td>{2}</td><td>{3}%</td><td><time>{4}</time></td></tr>'
@@ -117,12 +118,15 @@ def make_html(data: Iterable[Artifact]):
 
 
 def make_html_from_csv():
-    '''for testing'''
+    '''for local testing'''
     make_html(load())
 
 
 def main():
-    logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level='INFO')
+    if os.getenv('DLWATCHER_DEBUG'):
+        logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level='DEBUG')
+    else:
+        logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level='INFO')
 
     old = load()
     new = get_data()
@@ -130,7 +134,7 @@ def main():
 
     datalist = list(sorted(new.values(), key=lambda x: x[0]))
     save(datalist)
-    print('record counts:', len(new))
+    print('records count:', len(new))
     make_html(datalist)
 
 

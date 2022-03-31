@@ -20,9 +20,10 @@ jobs:
 
     - run: |
         curl -LO https://github.com/imba-tjd/dlwatcher/raw/master/data_tmpl.html
-
         curl -fL https://github.com/imba-tjd/dlwatcher/raw/master/dlwatcher.py | python3
         mv data.html index.html
+
+        if [ -z "$(git status -s)" ]; then exit; fi
 
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name  "GitHub Actions"
