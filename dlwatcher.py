@@ -7,7 +7,8 @@ import urllib3
 from datetime import date
 from typing import NamedTuple, Iterable
 
-pattern = re.compile(
+tr_pattern = re.compile('<tr[^>]*>(.+?)</tr>', re.S)
+artifact_pattern = re.compile(
     'id="_link_([^"]+?)"'  # RJCode
     '.+?'
     'work_thumb_box_img" alt="([^"]+?)"'  # Name
@@ -17,6 +18,7 @@ pattern = re.compile(
     'type_sale">(.+?)%OFF', re.S)  # Discount percent
 
 logger = logging.getLogger(__name__)
+pm = urllib3.PoolManager(headers={'Accept-Encoding': 'gzip'})
 
 
 class Artifact(NamedTuple):
@@ -36,35 +38,41 @@ def get_data() -> ArtifactDict:
     for cat in ('comic', 'game', 'voice'):
         for page in range(1, 6):
             html = download('https://www.dlsite.com/maniax/ranking/total?sort=sale&category=%s&page=%d' % (cat, page))
-            entries += pattern.findall(html)
+            entries += extract(html)
 
     for cat in ('books', 'girls'):
         for page in range(1, 3):
             html = download('https://www.dlsite.com/%s/ranking/total?page=%d' % (cat, page))
-            entries += pattern.findall(html)
+            entries += extract(html)
 
     for cat in ('books', 'girls'):
         for page in range(1, 4):
             html = download('https://www.dlsite.com/%s/ranking/total?page=%d' % (cat, page))
-            entries += pattern.findall(html)
+            entries += extract(html)
 
     assert entries  # 假定总有打折的，如果为空说明pattern出了问题
     today = date.today()
     logger.info('download end.')
-    logger.debug('entries:', entries)
+    logger.debug('entries: %s', entries)
     return {entry[0]: Artifact(entry[0], entry[1], entry[2], int(entry[3]), today) for entry in entries}
 
 
 def download(url: str) -> str:
-    global pm
-    pm = globals().get('pm') or urllib3.PoolManager(headers={'Accept-Encoding': 'gzip'})
-
-    logger.info('downloading', url)
+    logger.info('downloading %s', url)
     resp = pm.request('GET', url)
     html = resp.data.decode()
     logger.debug(html)
     time.sleep(0.5)
     return html
+
+
+def extract(html: str):
+    trs = tr_pattern.findall(html)
+    for tr in trs:
+        matched = artifact_pattern.findall(tr)
+        if matched:
+            assert len(matched) == 1
+            yield matched[0]
 
 
 def save(data: Iterable[Artifact], dbname='data.csv'):
@@ -89,7 +97,7 @@ def merge(old: list[Artifact], new: ArtifactDict):
     for item in old:
         if (id := item.ID) in new and item.Discount > new[id].Discount:
             new[id] = item
-    logger.debug('new entries:', new)
+    logger.debug('new entries: %s', new)
 
 
 def ya_api_builder(ids: list[str]):
@@ -112,7 +120,7 @@ def make_html(data: Iterable[Artifact]):
     row_tmpl = '<tr><td>{0}</td><td><a target="_blank" href="https://www.dlsite.com/maniax/work/=/product_id/{0}.html">{1}</a></td><td>{2}</td><td>{3}%</td><td><time>{4}</time></td></tr>'
     rows = ''.join((row_tmpl.format(*x) for x in data))
     html = html_tmpl.replace('{DATA}', rows)
-    html = re.sub(r'\n\s*',' ',html)
+    html = re.sub(r'\n\s*', ' ', html)
     with open('data.html', 'w+', encoding='u8') as out:
         out.write(html)
 
@@ -135,7 +143,11 @@ def main():
     datalist = list(sorted(new.values(), key=lambda x: x[0]))
     save(datalist)
     print('records count:', len(new))
-    make_html(datalist)
+
+    if os.path.exists('data_tmpl.html'):
+        make_html(datalist)
+    else:
+        logger.warning('no data_tmpl, not make html.')
 
 
 if __name__ == '__main__':

@@ -13,20 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@master
       with:
-        ref: gh_pages
+        ref: gh-pages
 
     - uses: actions/setup-python@v3
     - run: pip3 install urllib3
 
-    - run: |
-        curl -LO https://github.com/imba-tjd/dlwatcher/raw/master/data_tmpl.html
-        curl -fL https://github.com/imba-tjd/dlwatcher/raw/master/dlwatcher.py | python3
-        mv data.html index.html
+    - run: curl -LO 'https://github.com/imba-tjd/dlwatcher/raw/master/{data_tmpl.html,dlwatcher.py,deploy.sh}'
 
-        if [ -z "$(git status -s)" ]; then exit; fi
-
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --local user.name  "GitHub Actions"
-        git add data.csv index.html
-        git commit -m "Update"
-        git push
+    - run: bash deploy.sh
