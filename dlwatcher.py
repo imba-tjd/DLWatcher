@@ -4,7 +4,7 @@ import os
 import re
 import time
 import urllib3
-from datetime import date
+from datetime import date, timedelta
 from typing import NamedTuple, Iterable
 
 tr_pattern = re.compile('<tr[^>]*>(.+?)</tr>', re.S)
@@ -18,7 +18,8 @@ artifact_pattern = re.compile(
     'type_sale">(.+?)%OFF', re.S)  # Discount percent
 
 logger = logging.getLogger(__name__)
-pm = urllib3.PoolManager(headers={'Accept-Encoding': 'gzip'})
+pm = urllib3.PoolManager(headers={'Accept-Encoding': 'gzip'}, timeout=10)
+today = str(date.today())
 
 
 class Artifact(NamedTuple):
@@ -26,35 +27,39 @@ class Artifact(NamedTuple):
     Name: str
     Price: str
     Discount: int
-    Date: date
+    Date: str
 
 
 ArtifactDict = dict[str, Artifact]
 
 
-def get_data() -> ArtifactDict:
+def ArtifactIter2Dict(entries: Iterable[Artifact]):
+    return {entry[0]: entry for entry in entries}
+
+
+def get_data() -> Iterable[Artifact]:
     '''获得各个分类的top商品'''
-    entries = []
     for cat in ('comic', 'game', 'voice'):
-        for page in range(1, 6):
-            html = download('https://www.dlsite.com/maniax/ranking/total?sort=sale&category=%s&page=%d' % (cat, page))
-            entries += extract(html)
+        yield from get_data2(('maniax',), range(1, 6), cat)
 
-    for cat in ('books', 'girls'):
-        for page in range(1, 3):
-            html = download('https://www.dlsite.com/%s/ranking/total?page=%d' % (cat, page))
-            entries += extract(html)
+    yield from get_data2(('books', 'girls', 'bl'), range(1, 3))
+    yield from get_data2(('home', 'pro'), range(1, 4))
+    yield from get_data2(('comic',), range(1, 2))
 
-    for cat in ('books', 'girls'):
-        for page in range(1, 4):
-            html = download('https://www.dlsite.com/%s/ranking/total?page=%d' % (cat, page))
-            entries += extract(html)
+    logger.info('download ends.')
 
-    assert entries  # 假定总有打折的，如果为空说明pattern出了问题
-    today = date.today()
-    logger.info('download end.')
-    logger.debug('entries: %s', entries)
-    return {entry[0]: Artifact(entry[0], entry[1], entry[2], int(entry[3]), today) for entry in entries}
+
+def get_data2(cats: Iterable[str], pages: range, cat2: str = '') -> Iterable[Artifact]:
+    for cat in cats:
+        for page in pages:
+            url = 'https://www.dlsite.com/%s/ranking/total?sort=sale&page=%d' % (cat, page)
+            if cat2:
+                url += '&category=' + cat2
+            html = download(url)
+            for entry in extract(html):
+                art = Artifact(entry[0], entry[1], entry[2], int(entry[3]), today)
+                logger.debug('get %s', art)
+                yield art
 
 
 def download(url: str) -> str:
@@ -66,12 +71,15 @@ def download(url: str) -> str:
     return html
 
 
-def extract(html: str):
+def extract(html: str) -> Iterable[tuple]:
+    '''从html内容中提取打折商品的信息，每个tr只会对应一个商品'''
     trs = tr_pattern.findall(html)
+    assert trs  # 假定总有打折的，如果为空说明pattern出了问题
     for tr in trs:
         matched = artifact_pattern.findall(tr)
         if matched:
             assert len(matched) == 1
+            assert len(matched[0]) == 4
             yield matched[0]
 
 
@@ -82,22 +90,21 @@ def save(data: Iterable[Artifact], dbname='data.csv'):
         writer.writerows(data)
 
 
-def load(dbname='data.csv') -> list[Artifact]:
-    if not os.path.exists(dbname):
-        return []
-
+def load(dbname='data.csv') -> Iterable[Artifact]:
     with open(dbname, encoding='u8', newline='') as f:
         f.readline()  # 去掉header
-        return [Artifact(x[0], x[1], x[2], int(x[3]), date.fromisoformat(x[4])) for x in csv.reader(f)]
+        for x in csv.reader(f):
+            yield Artifact(x[0], x[1], x[2], int(x[3]), x[4])
 
 
-def merge(old: list[Artifact], new: ArtifactDict):
-    '''因为数据源只跟踪最新的top榜，所以把老的数据合并到新的数据中'''
-    logger.info('merging.')
-    for item in old:
-        if (id := item.ID) in new and item.Discount > new[id].Discount:
-            new[id] = item
-    logger.debug('new entries: %s', new)
+def merge(old: ArtifactDict, new: Iterable[Artifact]):
+    '''以新数据内容更新旧数据。如果ID在老数据中不存在，或者打折力度更高，或者价格相同但间隔时间超过7天，就更新'''
+    for item in new:
+        if ((id := item.ID) not in old
+            or item.Discount > old[id].Discount
+                or item.Discount == old[id].Discount and date.fromisoformat(item.Date) - date.fromisoformat(old[id].Date) >= timedelta(days=7)):
+            old[id] = item
+    logger.debug('merged: %s', new)
 
 
 def ya_api_builder(ids: list[str]):
@@ -136,13 +143,19 @@ def main():
     else:
         logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level='INFO')
 
-    old = load()
+    old = {}
+    if os.path.exists('data.csv'):
+        old = load()
+        old = ArtifactIter2Dict(old)
+    else:
+        logger.warning('no existing data.csv.')
+
     new = get_data()
     merge(old, new)
 
-    datalist = list(sorted(new.values(), key=lambda x: x[0]))
+    datalist = list(sorted(old.values(), key=lambda x: x[0]))  # 要使用多次，所以变为list
     save(datalist)
-    print('records count:', len(new))
+    print('records count:', len(old))
 
     if os.path.exists('data_tmpl.html'):
         make_html(datalist)
