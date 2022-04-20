@@ -54,7 +54,7 @@ def get_data2(cats: Iterable[str], pages: range, cat2: str = '') -> Iterable[Art
         for page in pages:
             url = 'https://www.dlsite.com/%s/ranking/total?sort=sale&page=%d' % (cat, page)
             if cat2:
-                url += '&category=' + cat2
+                url += f'&category={cat2}'
             html = download(url)
             for entry in extract(html):
                 art = Artifact(entry[0], entry[1], entry[2], int(entry[3]), today)
@@ -76,8 +76,7 @@ def extract(html: str) -> Iterable[tuple]:
     trs = tr_pattern.findall(html)
     assert trs  # 假定总有打折的，如果为空说明pattern出了问题
     for tr in trs:
-        matched = artifact_pattern.findall(tr)
-        if matched:
+        if matched := artifact_pattern.findall(tr):
             assert len(matched) == 1
             assert len(matched[0]) == 4
             yield matched[0]
