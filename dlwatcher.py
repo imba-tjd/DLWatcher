@@ -144,7 +144,7 @@ def main():
         logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level='INFO')
 
     old = {}
-    if os.path.exists('data.csv'):
+    if os.path.isfile('data.csv'):
         old = load()
         old = ArtifactIter2Dict(old)
     else:
@@ -157,7 +157,7 @@ def main():
     save(datalist)
     print('records count:', len(old))
 
-    if os.path.exists('data_tmpl.html'):
+    if os.path.isfile('data_tmpl.html'):
         make_html(datalist)
     else:
         logger.warning('no data_tmpl, not make html.')
