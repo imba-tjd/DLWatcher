@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html lang="en">
 
 <head>
     <title>🇩🇱 DLsite Lowest Price Watcher</title>
@@ -51,48 +52,52 @@
     </style>
 </head>
 
-<html lang="en">
-<header>
-    <h1>DLsite Lowest Price Watcher</h1>
-</header>
+<body>
+    <header>
+        <h1>DLsite Lowest Price Watcher</h1>
+    </header>
 
-<main>
-    <article>
-        <p>For a long time there isn't a DLsite version of <i>SteamDB</i>. It's easy to create one. But it's hard to:
-        </p>
-        <ul>
-            <li>not abuse crawling</li>
-            <li>make good use of data</li>
-            <li>prevent from being abused</li>
-        </ul>
-        <p>This program retrieves data from <code>https://www.dlsite.com/&lt;category&gt;/ranking/total</code>. Namely
-            it only tracks best sellers. You're not able to trivially modify this to track custom artifact.</p>
-        <p><strong>Recording starts from <time>2022/4/3</time></strong></p>
-    </article>
+    <main>
+        <article>
+            <p>For a long time there isn't a DLsite version of <em>SteamDB</em>. It's easy to create one. But it's hard
+                to:
+            </p>
+            <ul>
+                <li>not abuse crawling</li>
+                <li>make good use of data</li>
+                <li>prevent from being abused</li>
+            </ul>
+            <p>This program retrieves data from <code>https://www.dlsite.com/&lt;category&gt;/ranking/total</code>.
+                Namely it only tracks best sellers. You're not able to trivially modify this to track custom artifact.
+            </p>
+            <p><strong>Recording starts from <time>2022/4/3</time></strong></p>
+        </article>
 
-    <hr>
+        <hr>
 
-    <section data-nosnippet non-crawlable>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Discount</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody lang="ja">{DATA}</tbody>
-        </table>
-    </section>
-</main>
+        <section data-nosnippet non-crawlable>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Discount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody lang="ja">{DATA}</tbody>
+            </table>
+        </section>
+    </main>
 
-<footer>
-    <section>
-        <small><a href="https://github.com/imba-tjd/dlwatcher"
-                target="_blank">https://github.com/imba-tjd/dlwatcher</a></small>
-    </section>
-</footer>
+    <footer>
+        <section>
+            <small><a href="https://github.com/imba-tjd/dlwatcher"
+                    target="_blank">https://github.com/imba-tjd/dlwatcher</a></small>
+        </section>
+    </footer>
+
+</body>
 
 </html>
