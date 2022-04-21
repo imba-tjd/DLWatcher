@@ -99,10 +99,10 @@ def load(dbname='data.csv') -> Iterable[Artifact]:
 def merge(old: ArtifactDict, new: Iterable[Artifact]):
     '''以新数据内容更新旧数据。如果ID在老数据中不存在，或者打折力度更高，或者价格相同但间隔时间超过7天，就更新'''
     for item in new:
-        if ((id := item.ID) not in old
-            or item.Discount > old[id].Discount
-                or item.Discount == old[id].Discount and date.fromisoformat(item.Date) - date.fromisoformat(old[id].Date) >= timedelta(days=7)):
-            old[id] = item
+        if ((iid := item.ID) not in old
+            or item.Discount > old[iid].Discount
+                or item.Discount == old[iid].Discount and date.fromisoformat(item.Date) - date.fromisoformat(old[iid].Date) >= timedelta(days=7)):
+            old[iid] = item
     logger.debug('merged: %s', new)
 
 
@@ -110,8 +110,8 @@ def ya_api_builder(ids: list[str]):
     '''Yet another api. Chunk in 100.'''
     from itertools import islice
     endpoint = 'https://www.dlsite.com/maniax/product/info/ajax?cdn_cache_min=1&product_id='
-    while slice := tuple(islice(ids, 100)):
-        yield endpoint + '%2C'.join(slice)
+    while chunk := tuple(islice(ids, 100)):
+        yield endpoint + '%2C'.join(chunk)
 
 
 def ya_api_builder_2(n=100):
