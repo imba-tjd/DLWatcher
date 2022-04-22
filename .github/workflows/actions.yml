@@ -20,4 +20,8 @@ jobs:
 
     - run: curl -LO 'https://github.com/imba-tjd/dlwatcher/raw/master/{data_tmpl.html,dlwatcher.py,deploy.sh}'
 
+    - run: |
+        python3 dlwatcher.py
+        mv data.html index.html
+
     - run: bash deploy.sh
