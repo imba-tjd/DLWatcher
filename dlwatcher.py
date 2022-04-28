@@ -30,10 +30,18 @@ class Artifact(NamedTuple):
     Date: str
 
 
+class Overview(NamedTuple):
+    Count: int
+    P25: int
+    P50: int
+    P75: int
+    Avg: int
+
+
 ArtifactDict = dict[str, Artifact]
 
 
-def ArtifactIter2Dict(entries: Iterable[Artifact]):
+def ArtifactIter2Dict(entries: Iterable[Artifact]) -> dict[str, Artifact]:
     return {entry[0]: entry for entry in entries}
 
 
@@ -131,9 +139,16 @@ def make_html(data: Iterable[Artifact]):
         out.write(html)
 
 
-def make_html_from_csv():
-    '''for local testing'''
-    make_html(load())
+def calc_overview(datalist: Iterable[Artifact]) -> Overview:
+    prices = list(sorted(int(entry.Price.replace(',', '')) for entry in datalist))
+
+    cnt = len(prices)
+    p25 = prices[cnt // 4]
+    p50 = prices[cnt // 2]
+    p75 = prices[cnt // 4 * 3]
+    avg = sum(prices) // cnt
+
+    return Overview(cnt, p25, p50, p75, avg)
 
 
 def main():
@@ -154,7 +169,7 @@ def main():
 
     datalist = list(sorted(old.values(), key=lambda x: x[0]))  # 要使用多次，所以变为list
     save(datalist)
-    print('records count:', len(old))
+    logger.info(calc_overview(datalist))
 
     if os.path.isfile('data_tmpl.html'):
         make_html(datalist)
