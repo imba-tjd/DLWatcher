@@ -25,7 +25,7 @@ today = str(date.today())
 class Artifact(NamedTuple):
     ID: str
     Name: str
-    Price: str
+    Price: int
     Discount: int
     Date: str
 
@@ -65,13 +65,13 @@ def get_data2(cats: Iterable[str], pages: range, cat2: str = '') -> Iterable[Art
                 url += f'&category={cat2}'
             html = download(url)
             for entry in extract(html):
-                art = Artifact(entry[0], entry[1], entry[2], int(entry[3]), today)
+                art = Artifact(entry[0], entry[1], int(entry[2].replace(',', '')), int(entry[3]), today)
                 logger.debug('get %s', art)
                 yield art
 
 
 def download(url: str) -> str:
-    logger.info('downloading %s', url)
+    logger.info('getting %s', url)
     resp = pm.request('GET', url)
     html = resp.data.decode()
     logger.debug(html)
@@ -101,7 +101,7 @@ def load(dbname='data.csv') -> Iterable[Artifact]:
     with open(dbname, encoding='u8', newline='') as f:
         f.readline()  # 去掉header
         for x in csv.reader(f):
-            yield Artifact(x[0], x[1], x[2], int(x[3]), x[4])
+            yield Artifact(x[0], x[1], int(x[2]), int(x[3]), x[4])
 
 
 def merge(old: ArtifactDict, new: Iterable[Artifact]):
@@ -131,7 +131,7 @@ def make_html(data: Iterable[Artifact]):
     logger.info('making html.')
     with open('data_tmpl.html', encoding='u8') as f:
         html_tmpl = f.read()
-    row_tmpl = '<tr><td>{0}</td><td><a target="_blank" href="https://www.dlsite.com/maniax/work/=/product_id/{0}.html">{1}</a></td><td>{2}</td><td>{3}%</td><td><time>{4}</time></td></tr>'
+    row_tmpl = '<tr><td>{0}</td><td><a target="_blank" href="https://www.dlsite.com/maniax/work/=/product_id/{0}.html">{1}</a></td><td>{2:,}</td><td>{3}%</td><td><time>{4}</time></td></tr>'
     rows = ''.join((row_tmpl.format(*x) for x in data))
     html = html_tmpl.replace('{DATA}', rows)
     html = re.sub(r'\n\s*', ' ', html)
@@ -140,7 +140,7 @@ def make_html(data: Iterable[Artifact]):
 
 
 def calc_overview(datalist: Iterable[Artifact]) -> Overview:
-    prices = list(sorted(int(entry.Price.replace(',', '')) for entry in datalist))
+    prices = list(sorted(entry.Price for entry in datalist))
 
     cnt = len(prices)
     p25 = prices[cnt // 4]
