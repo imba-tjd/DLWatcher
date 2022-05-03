@@ -42,7 +42,11 @@ ArtifactDict = dict[str, Artifact]
 
 
 def ArtifactIter2Dict(entries: Iterable[Artifact]) -> dict[str, Artifact]:
-    return {entry[0]: entry for entry in entries}
+    return {entry.ID: entry for entry in entries}
+
+
+def ArtifactDict2SortedIter(ad: ArtifactDict) -> Iterable[Artifact]:
+    return sorted(ad.values(), key=lambda x: x.ID)
 
 
 def get_data() -> Iterable[Artifact]:
@@ -159,17 +163,18 @@ def main():
 
     old = {}
     if os.path.isfile('data.csv'):
-        old = load()
-        old = ArtifactIter2Dict(old)
+        old = ArtifactIter2Dict(load())
     else:
         logger.warning('no existing data.csv.')
 
     new = get_data()
     merge(old, new)
 
-    datalist = list(sorted(old.values(), key=lambda x: x[0]))  # 要使用多次，所以变为list
+    datalist = list(ArtifactDict2SortedIter(old))  # 要使用多次，所以变为list。之后若想节省内存可考虑del old和new
+
     save(datalist)
-    logger.info(calc_overview(datalist))
+    ov = calc_overview(datalist)
+    logger.info(ov)
 
     if os.path.isfile('data_tmpl.html'):
         make_html(datalist)
