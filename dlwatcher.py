@@ -4,7 +4,7 @@ import os
 import re
 import time
 import urllib3
-from datetime import date, timedelta
+from datetime import date
 from typing import NamedTuple, Iterable
 
 tr_pattern = re.compile('<tr[^>]*>(.+?)</tr>', re.S)
@@ -19,7 +19,7 @@ artifact_pattern = re.compile(
 
 logger = logging.getLogger(__name__)
 pm = urllib3.PoolManager(headers={'Accept-Encoding': 'gzip'}, timeout=10)
-today = str(date.today())
+today = date.today()
 
 
 class Artifact(NamedTuple):
@@ -27,7 +27,7 @@ class Artifact(NamedTuple):
     Name: str
     Price: int
     Discount: int
-    Date: str
+    Date: date
 
 
 class Overview(NamedTuple):
@@ -58,6 +58,7 @@ def get_data() -> Iterable[Artifact]:
 
 
 def get_data2(cats: Iterable[str], pages: range, cat2: str = '') -> Iterable[Artifact]:
+    '''maniax的分类在cat2里，其余的分类在cats里'''
     for cat in cats:
         for page in pages:
             url = 'https://www.dlsite.com/%s/ranking/total?sort=sale&page=%d' % (cat, page)
@@ -101,7 +102,7 @@ def load(dbname='data.csv') -> Iterable[Artifact]:
     with open(dbname, encoding='u8', newline='') as f:
         f.readline()  # 去掉header
         for x in csv.reader(f):
-            yield Artifact(x[0], x[1], int(x[2]), int(x[3]), x[4])
+            yield Artifact(x[0], x[1], int(x[2]), int(x[3]), date.fromisoformat(x[4]))
 
 
 def merge(old: ArtifactDict, new: Iterable[Artifact]):
@@ -109,8 +110,8 @@ def merge(old: ArtifactDict, new: Iterable[Artifact]):
     for item in new:
         if ((iid := item.ID) not in old
             or item.Discount > old[iid].Discount
-                or item.Discount == old[iid].Discount and date.fromisoformat(item.Date) - date.fromisoformat(old[iid].Date) >= timedelta(days=7)):
-            old[iid] = item
+            or item.Discount == old[iid].Discount and (item.Date - old[iid].Date).days >= 7):
+                old[iid] = item
     logger.debug('merged: %s', new)
 
 
@@ -147,7 +148,6 @@ def calc_overview(datalist: Iterable[Artifact]) -> Overview:
     p50 = prices[cnt // 2]
     p75 = prices[cnt // 4 * 3]
     avg = sum(prices) // cnt
-
     return Overview(cnt, p25, p50, p75, avg)
 
 
