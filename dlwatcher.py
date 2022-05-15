@@ -6,6 +6,7 @@ import time
 import urllib3
 from datetime import date
 from typing import NamedTuple, Iterable
+from collections import Counter
 
 tr_pattern = re.compile('<tr[^>]*>(.+?)</tr>', re.S)
 artifact_pattern = re.compile(
@@ -144,7 +145,7 @@ def make_html(data: Iterable[Artifact]):
         out.write(html)
 
 
-def calc_overview(datalist: Iterable[Artifact]) -> Overview:
+def calc_price_overview(datalist: Iterable[Artifact]) -> Overview:
     prices = list(sorted(entry.Price for entry in datalist))
 
     cnt = len(prices)
@@ -153,6 +154,12 @@ def calc_overview(datalist: Iterable[Artifact]) -> Overview:
     p75 = prices[cnt // 4 * 3]
     avg = sum(prices) // cnt
     return Overview(cnt, p25, p50, p75, avg)
+
+
+def calc_disc_portion(datalist: Iterable[Artifact]) -> list[tuple[int, float]]:
+    ct = Counter((x.Discount for x in datalist))
+    mc = ct.most_common(3)
+    return [(x[0], x[1]/ct.total()) for x in mc]
 
 
 def main():
@@ -173,8 +180,10 @@ def main():
     datalist = list(ArtifactDict2SortedIter(old))  # 要使用多次，所以变为list。之后若想节省内存可考虑del old和new
 
     save(datalist)
-    ov = calc_overview(datalist)
+    ov = calc_price_overview(datalist)
     logger.info(ov)
+    dp = calc_disc_portion(datalist)
+    logger.info(dp)
 
     if os.path.isfile('data_tmpl.html'):
         make_html(datalist)
