@@ -58,12 +58,8 @@
             display: none;
         }
 
-        :not(#r18chk:checked)~#details {
-            display: none;
-        }
-
         #r18chk:checked~#details {
-            display: block;
+            display: block !important;
         }
     </style>
 </head>
@@ -93,7 +89,7 @@
 
         <input type="checkbox" id="r18chk"><label for="r18chk">Before seeing the details, I promise I'm 18+</label>
 
-        <section id="details" data-nosnippet non-crawlable>
+        <section id="details" data-nosnippet non-crawlable style="display: none">
             <table>
                 <thead>
                     <tr>
