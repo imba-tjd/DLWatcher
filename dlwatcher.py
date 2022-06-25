@@ -71,7 +71,8 @@ def get_data2(cats: Iterable[str], pages: range, cat2: str = '') -> Iterable[Art
                 url += f'&category={cat2}'
             html = download(url)
             for entry in extract(html):
-                art = Artifact(entry[0], entry[1], int(entry[2].replace(',', '')), int(entry[3]), today)
+                art = Artifact(entry[0], entry[1].replace('&quot;', '"').replace('&#039;', "'"),
+                               int(entry[2].replace(',', '')), int(entry[3]), today)
                 logger.debug('get %s', art)
                 yield art
 

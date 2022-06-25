@@ -9,4 +9,4 @@ For more introduction, see `article` tag in `data_tmpl.html`.
 TODO:
 
 * GreaseMonkey script
-* use pandas to analyze data
+* There are some html entities in csv：`&amp; &lt; &gt;` because it's unclear how to encode them in *make_html*, and `"` is escaped to `"...""..."`
