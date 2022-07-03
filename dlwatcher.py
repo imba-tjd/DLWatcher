@@ -71,7 +71,7 @@ def get_data2(cats: Iterable[str], pages: range, cat2: str = '') -> Iterable[Art
                 url += f'&category={cat2}'
             html = download(url)
             for entry in extract(html):
-                art = Artifact(entry[0], entry[1].replace('&quot;', '"').replace('&#039;', "'"),
+                art = Artifact(entry[0], entry[1].replace('&quot;', '"'),
                                int(entry[2].replace(',', '')), int(entry[3]), today)
                 logger.debug('get %s', art)
                 yield art
@@ -163,6 +163,14 @@ def calc_disc_portion(datalist: Iterable[Artifact]) -> list[tuple[int, float]]:
     return [(x[0], x[1]/ct.total()) for x in mc]
 
 
+def purify_csv(filename='data.csv'):
+    with open(filename, encoding='u8') as f:
+        content = f.read()
+    content = content.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&#039;', "'")
+    with open(filename, 'w+', encoding='u8') as f:
+        f.write(content)
+
+
 def main():
     if os.getenv('DLWATCHER_DEBUG'):
         logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level='DEBUG')
@@ -181,6 +189,7 @@ def main():
     datalist = list(ArtifactDict2SortedIter(old))  # 要使用多次，所以变为list。之后若想节省内存可考虑del old和new
 
     save(datalist)
+    purify_csv()
     ov = calc_price_overview(datalist)
     logger.info(ov)
     dp = calc_disc_portion(datalist)
