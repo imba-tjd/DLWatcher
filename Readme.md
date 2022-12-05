@@ -9,3 +9,5 @@ For more introduction, see `article` tag in `data_tmpl.html`.
 TODO:
 
 * GreaseMonkey script
+* extract中匹配单个tr的属性，假设网页变动后artifact_pattern匹配失败，目前会与未打折混淆
+* appx分类也有排行榜了，5页，但artifact_pattern匹配Name失败，它没有`work_thumb_box_img`，考虑改用`<img src="data:image`下的alt
