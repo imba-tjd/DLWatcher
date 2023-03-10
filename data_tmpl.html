@@ -8,8 +8,9 @@
     <meta name="description" content="Track the lowest price of best sellers on DLsite">
     <meta name="google-site-verification" content="RMbl3zrxUNoAN9Q2XcBsy7qLE5te_LAO9wR6PW0MVsU" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'" />
-    <link rel="icon" href="data:" type="image/x-icon">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; style-src 'unsafe-inline'; img-src https://wiki.greasespot.net/favicon.ico" />
+    <link rel="icon" href="#" type="image/x-icon">
 
     <style>
         header {
@@ -19,6 +20,7 @@
         }
 
         header h1 {
+            margin-top: 0px;
             padding: 5px;
         }
 
@@ -35,6 +37,25 @@
 
         footer a {
             color: white;
+        }
+
+        article {
+            max-width: 960px;
+            margin: auto;
+        }
+
+        a.userscript {
+            display: inline-block;
+            text-decoration: none;
+            padding: 5px;
+            user-select: none;
+            font-family: Helvetica, Arial, serif;
+            border: 1px solid black;
+            color: blue;
+        }
+
+        a.userscript:hover {
+            background-color: greenyellow;
         }
 
         tbody tr:nth-child(odd) {
@@ -64,6 +85,7 @@
         #r18chk:checked~#details {
             display: block !important;
         }
+
     </style>
 </head>
 
@@ -86,11 +108,17 @@
                 Namely it only tracks best sellers. You're not able to trivially modify this to track custom artifact.
             </p>
             <p><strong>Recording starts from <time>2022/4/3</time></strong></p>
+
+            <a class="userscript" href="https://github.com/imba-tjd/DLWatcher/raw/master/DLWatcher.user.js"
+                target="_blank" rel="noopener">
+                <img src="https://wiki.greasespot.net/favicon.ico" alt="icon"> Add userscript
+            </a>
         </article>
 
         <hr>
 
-        <input type="checkbox" id="r18chk"><label for="r18chk">Before seeing the details, I promise I'm 18+</label>
+        <input type="checkbox" id="r18chk"><label for="r18chk">Before seeing the details, I promise I'm
+            <strong style="color: red">18+</strong></label>
 
         <section id="details" data-nosnippet non-crawlable style="display: none">
             <table>

@@ -2,7 +2,7 @@
 // @name         DLWatcher
 // @namespace    https://github.com/imba-tjd
 // @version      0.1
-// @description  Track the lowest price of best sellers on DLsite
+// @description  This script adds Lowest label on detail pages if there are records in csv.
 // @author       imba-tjd
 // @homepageURL  https://github.com/imba-tjd/DLWatcher
 // @license      AGPL
@@ -18,7 +18,7 @@
 
 /** @param {String} url */
 function parse_rj(url) {
-    return url.match(/product_id\/(.+?)\.html/)?.[1]
+    return url.match(/product_id\/(\w\w\d+?)\b/)?.[1]
 }
 
 /**
