@@ -15,7 +15,6 @@ jobs:
       with:
         ref: gh-pages
 
-    - uses: actions/setup-python@v3
     - run: pip3 install urllib3
 
     - run: "curl -LO 'https://github.com/imba-tjd/dlwatcher/raw/master/{data_tmpl.html,dlwatcher.py,deploy.sh}' -H 'Cache-Control: no-cache'"
