@@ -138,7 +138,7 @@ def make_html(data: Iterable[Artifact]):
     logger.info('making html.')
     with open('data_tmpl.html', encoding='u8') as f:
         html_tmpl = f.read()
-    row_tmpl = '<tr><td>{0}</td><td><a target="_blank" rel="noopener" href="https://www.dlsite.com/maniax/work/=/product_id/{0}.html">{1}</a></td><td>{2:,}</td><td>{3}%</td><td><time>{4}</time></td></tr>'
+    row_tmpl = '<tr><td>{0}</td><td><a rel="noopener" href="{0}">{1}</a></td><td>{2:,}</td><td>{3}%</td><td><time>{4}</time></td></tr>'
     rows = ''.join(row_tmpl.format(*x) for x in data)
     html = html_tmpl.replace('{DATA}', rows)
     html = re.sub(r'\n\s*', ' ', html)
