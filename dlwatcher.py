@@ -142,7 +142,9 @@ def make_html(data: Iterable[Artifact]):
     rows = ''.join(row_tmpl.format(*x) for x in data)
     html = html_tmpl.replace('{DATA}', rows)
     html = re.sub(r'\n\s*', ' ', html)
-    html = html.replace('<Object Control>', '&lt;Object Control&gt;', 1)  # RJ335663
+    html = (html.replace('<Object Control>', '&lt;Object Control&gt;', 1)  # RJ335663
+            .replace('<Re:フォーリー>', '&lt;Re:フォーリー&gt;', 1)  # RJ280139
+            .replace('<ぷち>', '&lt;ぷち&gt;', 1))  # RJ315852
     with open('data.html', 'w+', encoding='u8') as out:
         out.write(html)
 
