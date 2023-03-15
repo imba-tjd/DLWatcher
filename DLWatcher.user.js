@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DLWatcher
 // @namespace    https://github.com/imba-tjd
-// @version      0.1
+// @version      0.2
 // @description  This script adds Lowest label on detail pages if there are records in csv.
 // @author       imba-tjd
 // @homepageURL  https://github.com/imba-tjd/DLWatcher
@@ -90,12 +90,10 @@ async function main() {
 
     const body = create_work_buy_body(price, lowest_text)
 
-    const c = get_container()
-    if (c === null) return
+    while(!document.querySelector('#work_buy_btn .btn_buy'))
+        await new Promise((resolve, _) => setTimeout(resolve, 1000))
 
-    await new Promise((resolve, _) => setTimeout(resolve, 1000))
-
-    c.insertAdjacentHTML("beforeend", body)
+    get_container()?.insertAdjacentHTML("beforeend", body)
 }
 
 main()
