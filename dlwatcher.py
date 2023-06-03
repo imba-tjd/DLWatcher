@@ -57,7 +57,7 @@ def get_data() -> Iterable[Artifact]:
 
     yield from get_data2(('books', 'girls', 'bl'), range(1, 3))
     yield from get_data2(('home', 'pro'), range(1, 4))
-    yield from get_data2(('comic',), range(1, 2))
+    # yield from get_data2(('comic',), range(1, 2))
 
     logger.info('download ends.')
 
